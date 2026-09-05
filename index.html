@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>گالری سنگ طبیعی | فروش تخصصی سنگ و نگین</title>
+  <meta name="description" content="گالری مدرن فروش سنگ‌های طبیعی، عقیق، شجر، ژئود و نگین">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+</head>
+<body>
+  <div class="topbar">✦ ارسال مطمئن سراسر کشور &nbsp; • &nbsp; تضمین اصالت و کیفیت &nbsp; • &nbsp; پشتیبانی سریع</div>
+  <header class="header">
+    <a class="brand" href="#"><span class="brand-mark">◇</span><span><b>گالری سنگ طبیعی</b><small>زیبایی طبیعت، در دستان شما</small></span></a>
+    <nav>
+      <a href="#home">خانه</a><a href="#categories">دسته‌بندی</a><a href="#products">محصولات</a><a href="#about">درباره ما</a><a href="admin.html">مدیریت</a>
+    </nav>
+    <button class="cart-btn" id="cartBtn">سبد خرید <span id="cartCount">۰</span></button>
+  </header>
+
+  <main>
+    <section class="hero" id="home">
+<div class="hero-copy"><span class="eyebrow">NATURAL STONE GALLERY</span>
+<h1>زیبایی طبیعت،<br><em>در دستان شما</em></h1>
+<p>منتخب‌ترین سنگ‌های طبیعی، عقیق، شجر، ژئود و نگین‌های کلکسیونی را با کیفیت بالا و ارائه‌ای متفاوت ببینید.</p>
+<div class="hero-actions"><a class="btn primary" href="#products">مشاهده محصولات</a><a class="btn gold" href="#categories">کشف مجموعه‌ها</a></div>
+<div class="trust"><span>✦ تضمین اصالت</span><span>✦ ارسال سریع</span><span>✦ پشتیبانی اختصاصی</span></div></div>
+<div class="hero-art"><div class="hero-orb"></div><div class="hero-stone"><img src="1000051492.jpg" alt="سنگ طبیعی منتخب"><div class="hero-overlay"></div><div class="hero-caption"><small>COLLECTOR'S CHOICE</small><b>یک تکه از هنر زمین</b><span>انتخاب شده برای کلکسیون شما</span></div></div><div class="floating-card"><b>+۱۰۰</b><span>سنگ خاص</span></div></div>
+</section>
+
+    <section class="benefits"><div><b>♢</b><span><strong>ضمانت اصالت</strong>انتخاب دقیق سنگ‌ها</span></div><div><b>◈</b><span><strong>بسته‌بندی شکیل</strong>ایمن و حرفه‌ای</span></div><div><b>✦</b><span><strong>ارسال سریع</strong>به سراسر کشور</span></div><div><b>◇</b><span><strong>پشتیبانی</strong>همیشه کنار شما</span></div></section><section class="section" id="categories">
+      <div class="section-head"><div><span class="eyebrow">EXPLORE</span><h2>دسته‌بندی‌ها</h2></div><p>برای پیدا کردن سنگ موردنظرت، یک دسته را انتخاب کن.</p></div>
+      <div class="category-grid" id="categoryGrid"></div>
+    </section>
+
+    <section class="section products-section" id="products">
+      <div class="section-head">
+        <div><span class="eyebrow">CURATED COLLECTION</span><h2>محصولات منتخب</h2></div>
+        <div class="filters"><input id="search" placeholder="جستجوی سنگ..." /><select id="categoryFilter"><option value="">همه دسته‌ها</option></select></div>
+      </div>
+      <div class="products" id="productsGrid"><div class="loading">در حال بارگذاری محصولات...</div></div>
+    </section>
+
+    <section class="story" id="about">
+      <div><span class="eyebrow">OUR STORY</span><h2>هر سنگ، یک داستان از دل زمین</h2></div>
+      <p>ما سنگ‌های طبیعی را با نگاه کلکسیونی انتخاب می‌کنیم؛ ظاهر، نقش، رنگ و فرم هر قطعه مهم است. هدف این گالری ارائه محصولاتی است که هم برای کلکسیون و هم برای ساخت نگین و زیورآلات ارزشمند باشند.</p>
+    </section>
+  </main>
+
+  <footer><div><b>گالری سنگ طبیعی</b><span>سنگ‌های خاص، انتخاب‌های ماندگار.</span></div><div>© ۲۰۲۶ تمامی حقوق محفوظ است.</div></footer>
+
+  <div class="drawer-backdrop" id="backdrop"></div>
+  <aside class="drawer" id="drawer">
+    <div class="drawer-head"><h3>سبد خرید</h3><button id="closeCart">×</button></div>
+    <div id="cartItems" class="cart-items"></div>
+    <div class="cart-footer"><div><span>مجموع</span><strong id="cartTotal">۰ تومان</strong></div><button class="btn primary full" id="whatsappOrder">ثبت سفارش در واتساپ</button></div>
+  </aside>
+
+  <div class="modal" id="productModal"><div class="modal-box"><button class="modal-close" id="modalClose">×</button><img id="modalImg"><div><span class="eyebrow" id="modalCat"></span><h2 id="modalTitle"></h2><p id="modalDesc"></p><strong class="modal-price" id="modalPrice"></strong><button class="btn primary full" id="modalAdd">افزودن به سبد خرید</button></div></div></div>
+  <script src="app.js"></script>
+</body>
+</html>

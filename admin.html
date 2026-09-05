@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>داشبورد مدیریت | گالری سنگ</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script>
+</head>
+<body class="admin-body">
+<div class="admin-wrap">
+<header class="admin-head"><div><span class="eyebrow">STONE GALLERY • ADMIN</span><h1>داشبورد مدیریت</h1></div><a class="btn ghost" href="index.html">مشاهده فروشگاه</a></header>
+<section id="loginBox" class="admin-card login-card"><h2>ورود مدیر</h2><p>برای مدیریت فروشگاه وارد حساب مدیر شوید.</p><input id="email" type="email" placeholder="ایمیل مدیر"><input id="password" type="password" placeholder="رمز عبور"><button class="btn primary full" id="login">ورود به داشبورد</button><small id="loginMsg"></small></section>
+<section id="panel" style="display:none">
+<div class="dashboard-stats">
+<div><span>فروش ثبت‌شده</span><b id="statSales">۰</b><small>تومان</small></div>
+<div><span>تعداد سفارش</span><b id="statOrders">۰</b><small>سفارش</small></div>
+<div><span>محصولات</span><b id="statProducts">۰</b><small>محصول فعال</small></div>
+<div><span>دسته‌بندی</span><b id="statCats">۰</b><small>دسته</small></div>
+</div>
+<div class="admin-tabs"><button class="active" data-tab="productsTab">محصولات</button><button data-tab="ordersTab">سفارش‌ها</button><button data-tab="categoriesTab">دسته‌بندی‌ها</button></div>
+<div id="productsTab">
+<div class="admin-grid">
+<div class="admin-card"><h2>افزودن محصول جدید</h2><input id="pName" placeholder="نام محصول"><select id="pCat"></select><input id="pPrice" type="number" placeholder="قیمت به تومان"><textarea id="pDesc" placeholder="توضیحات محصول"></textarea><input id="pImage" type="file" accept="image/*"><button class="btn primary full" id="addProduct">ذخیره محصول</button><div id="adminMsg"></div></div>
+<div class="admin-card"><h2>محصولات ثبت‌شده</h2><div id="adminProducts"></div></div>
+</div></div>
+<div id="ordersTab" class="admin-tab-content" style="display:none"><div class="admin-card"><h2>مدیریت سفارش‌ها</h2><div id="ordersList"></div></div></div>
+<div id="categoriesTab" class="admin-tab-content" style="display:none"><div class="admin-grid"><div class="admin-card"><h2>افزودن دسته</h2><div class="inline"><input id="newCat" placeholder="مثلاً سنگ باباقوری"><button class="btn primary" id="addCat">افزودن</button></div></div><div class="admin-card"><h2>دسته‌بندی‌های فعلی</h2><div id="catList"></div></div></div></div>
+</section>
+</div>
+<script src="admin.js"></script>
+</body></html>
