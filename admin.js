@@ -1,31 +1,22 @@
-// ==========================================
-// پنل مدیریت گالری سنگ طبیعی - نسخه پایدار
-// ==========================================
-
 let supabaseClient = null;
 
-// نمایش پیام روی صفحه
 function showAdminMessage(message, type = "error") {
   let box = document.getElementById("adminStatus");
 
   if (!box) {
     box = document.createElement("div");
     box.id = "adminStatus";
-
     box.style.cssText =
       "position:fixed;left:12px;right:12px;bottom:12px;z-index:99999;" +
       "padding:14px 16px;border-radius:12px;font-family:inherit;" +
-      "font-size:14px;line-height:1.8;box-shadow:0 4px 20px rgba(0,0,0,.15);" +
-      "background:#fff;border:1px solid #ddd;white-space:pre-line;";
-
+      "font-size:14px;line-height:1.8;background:#fff;" +
+      "border:1px solid #ddd;box-shadow:0 4px 20px rgba(0,0,0,.15);";
     document.body.appendChild(box);
   }
 
   box.textContent = message;
   box.style.color = type === "success" ? "#137333" : "#b00020";
-  box.style.borderColor =
-    type === "success" ? "#9bd6aa" : "#f0a0aa";
-  box.style.display = "block";
+  box.style.borderColor = type === "success" ? "#9bd6aa" : "#f0a0aa";
 }
 
 function hideAdminMessage() {
@@ -33,91 +24,49 @@ function hideAdminMessage() {
   if (box) box.style.display = "none";
 }
 
-// ==========================================
-// اتصال به Supabase
-// ==========================================
 function initSupabase() {
   try {
-    if (
-      !window.supabase ||
-      typeof window.supabase.createClient !== "function"
-    ) {
-      showAdminMessage(
-        "کتابخانه Supabase بارگذاری نشده است.\nصفحه را با Chrome دوباره باز کنید."
-      );
+    if (!window.supabase) {
+      showAdminMessage("کتابخانه Supabase بارگذاری نشده است.");
       return false;
     }
 
-    if (
-      typeof SUPABASE_URL === "undefined" ||
-      typeof SUPABASE_KEY === "undefined"
-    ) {
-      showAdminMessage(
-        "فایل config.js پیدا نشد یا تنظیمات Supabase درست نیست."
-      );
+    const url = window.SUPABASE_URL;
+    const key = window.SUPABASE_KEY;
+
+    if (!url || !key) {
+      showAdminMessage("آدرس یا کلید Supabase پیدا نشد.");
       return false;
     }
 
-    if (!SUPABASE_URL || !SUPABASE_KEY) {
-      showAdminMessage(
-        "آدرس یا کلید Supabase خالی است.\nفایل config.js را بررسی کنید."
-      );
-      return false;
-    }
-
-    supabaseClient = window.supabase.createClient(
-      SUPABASE_URL,
-      SUPABASE_KEY
-    );
-
+    supabaseClient = window.supabase.createClient(url, key);
     return true;
 
   } catch (error) {
-    console.error("Supabase init error:", error);
-
     showAdminMessage(
       "خطا در اتصال به Supabase:\n" +
       (error.message || String(error))
     );
-
     return false;
   }
 }
 
-// ==========================================
-// ورود مدیر
-// ==========================================
 async function adminLogin() {
-
   hideAdminMessage();
 
-  const emailInput = document.getElementById("adminEmail");
-  const passwordInput = document.getElementById("adminPassword");
-
-  const email = emailInput
-    ? emailInput.value.trim()
-    : "";
-
-  const password = passwordInput
-    ? passwordInput.value
-    : "";
+  const email = document.getElementById("adminEmail").value.trim();
+  const password = document.getElementById("adminPassword").value;
 
   if (!email || !password) {
-    showAdminMessage(
-      "لطفاً ایمیل و رمز عبور را وارد کنید."
-    );
+    showAdminMessage("ایمیل و رمز عبور را وارد کنید.");
     return;
   }
 
   if (!supabaseClient) {
-    if (!initSupabase()) {
-      return;
-    }
+    if (!initSupabase()) return;
   }
 
-  const button = document.querySelector(
-    ".login-card .primary-btn"
-  );
+  const button = document.querySelector(".login-card .primary-btn");
 
   if (button) {
     button.disabled = true;
@@ -125,70 +74,33 @@ async function adminLogin() {
   }
 
   try {
-
-    const result =
+    const { data, error } =
       await supabaseClient.auth.signInWithPassword({
         email: email,
         password: password
       });
 
-    const data = result.data;
-    const error = result.error;
-
     if (error) {
-
-      console.error("Login error:", error);
-
-      let message =
-        error.message || "ورود ناموفق بود.";
-
-      if (
-        /invalid login credentials/i.test(message)
-      ) {
-        message =
-          "ایمیل یا رمز عبور اشتباه است.\n" +
-          "ایمیل: galleryroock@gmail.com";
-      }
-
       showAdminMessage(
-        "ورود ناموفق بود ❌\n\n" + message
+        "ورود ناموفق بود ❌\n\n" +
+        error.message
       );
-
       return;
     }
 
-    const loginBox =
-      document.getElementById("loginBox");
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("panel").style.display = "block";
 
-    const panel =
-      document.getElementById("panel");
-
-    if (loginBox) {
-      loginBox.style.display = "none";
-    }
-
-    if (panel) {
-      panel.style.display = "block";
-    }
-
-    showAdminMessage(
-      "ورود با موفقیت انجام شد ✅",
-      "success"
-    );
+    showAdminMessage("ورود با موفقیت انجام شد ✅", "success");
 
     await loadProducts();
 
   } catch (error) {
-
-    console.error("Unexpected login error:", error);
-
     showAdminMessage(
-      "خطای غیرمنتظره هنگام ورود ❌\n\n" +
+      "خطای ورود ❌\n\n" +
       (error.message || String(error))
     );
-
   } finally {
-
     if (button) {
       button.disabled = false;
       button.textContent = "ورود به پنل";
@@ -196,99 +108,35 @@ async function adminLogin() {
   }
 }
 
-// ==========================================
-// خروج
-// ==========================================
 async function adminLogout() {
+  if (!supabaseClient) return;
 
-  if (!supabaseClient) {
-    if (!initSupabase()) return;
-  }
+  await supabaseClient.auth.signOut();
 
-  try {
-
-    const { error } =
-      await supabaseClient.auth.signOut();
-
-    if (error) {
-      showAdminMessage(
-        "خطا در خروج:\n" + error.message
-      );
-      return;
-    }
-
-    const panel =
-      document.getElementById("panel");
-
-    const loginBox =
-      document.getElementById("loginBox");
-
-    if (panel) {
-      panel.style.display = "none";
-    }
-
-    if (loginBox) {
-      loginBox.style.display = "block";
-    }
-
-    showAdminMessage(
-      "از حساب خارج شدید."
-    );
-
-  } catch (error) {
-
-    showAdminMessage(
-      "خطا در خروج:\n" +
-      (error.message || String(error))
-    );
-  }
+  document.getElementById("panel").style.display = "none";
+  document.getElementById("loginBox").style.display = "block";
 }
 
-// ==========================================
-// دریافت محصولات
-// ==========================================
 async function loadProducts() {
+  const { data, error } = await supabaseClient
+    .from("products")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-  if (!supabaseClient) {
-    if (!initSupabase()) return;
-  }
-
-  try {
-
-    const { data, error } =
-      await supabaseClient
-        .from("products")
-        .select("*")
-        .order("created_at", {
-          ascending: false
-        });
-
-    if (error) {
-      console.error(
-        "خطا در دریافت محصولات:",
-        error
-      );
-      return;
-    }
-
-    displayProducts(data || []);
-
-    updateProductCount(data || []);
-
-  } catch (error) {
-
-    console.error(
-      "خطای دریافت محصولات:",
-      error
+  if (error) {
+    console.error(error);
+    showAdminMessage(
+      "خطا در دریافت محصولات:\n" +
+      error.message
     );
+    return;
   }
+
+  displayProducts(data);
+  updateProductCount(data);
 }
 
-// ==========================================
-// نمایش محصولات
-// ==========================================
 function displayProducts(products) {
-
   const container =
     document.getElementById("productsList") ||
     document.getElementById("registeredProducts");
@@ -298,73 +146,36 @@ function displayProducts(products) {
   container.innerHTML = "";
 
   if (!products || products.length === 0) {
-
     container.innerHTML =
-      '<div class="empty-products">' +
-      "هنوز محصولی ثبت نشده است." +
-      "</div>";
-
+      '<div class="empty-products">هنوز محصولی ثبت نشده است.</div>';
     return;
   }
 
   products.forEach(product => {
-
-    const item =
-      document.createElement("div");
-
-    item.className =
-      "product-admin-item";
+    const item = document.createElement("div");
+    item.className = "product-admin-item";
 
     item.innerHTML = `
-
       <div class="product-admin-image">
-
         ${
           product.image_url
-
-            ? `<img
-                src="${escapeHtml(product.image_url)}"
-                alt="${escapeHtml(
-                  product.name || "محصول"
-                )}">`
-
+            ? `<img src="${escapeHtml(product.image_url)}"
+                 alt="${escapeHtml(product.name || "محصول")}">`
             : `<div>بدون تصویر</div>`
         }
-
       </div>
 
       <div class="product-admin-info">
-
-        <h3>
-          ${escapeHtml(
-            product.name || "بدون نام"
-          )}
-        </h3>
-
-        <p>
-          قیمت:
-          ${formatPrice(product.price)}
-          تومان
-        </p>
-
-        <p>
-          دسته‌بندی:
-          ${escapeHtml(
-            product.category || "-"
-          )}
-        </p>
-
+        <h3>${escapeHtml(product.name || "بدون نام")}</h3>
+        <p>قیمت: ${formatPrice(product.price)} تومان</p>
+        <p>دسته‌بندی: ${escapeHtml(product.category || "-")}</p>
       </div>
 
       <button
         type="button"
-        onclick="deleteProduct('${escapeHtml(
-          product.id
-        )}')"
+        onclick="deleteProduct('${product.id}')"
         class="delete-product-btn">
-
         حذف محصول
-
       </button>
     `;
 
@@ -372,46 +183,33 @@ function displayProducts(products) {
   });
 }
 
-// ==========================================
-// افزودن محصول
-// ==========================================
 async function addProduct() {
+  const name = getValue([
+    "productName",
+    "name",
+    "productTitle"
+  ]);
 
-  if (!supabaseClient) {
-    if (!initSupabase()) return;
-  }
+  const price = getValue([
+    "productPrice",
+    "price"
+  ]);
 
-  const name =
-    getValue([
-      "productName",
-      "name",
-      "productTitle"
-    ]);
+  const category = getValue([
+    "productCategory",
+    "category"
+  ]);
 
-  const price =
-    getValue([
-      "productPrice",
-      "price"
-    ]);
+  const imageUrl = getValue([
+    "productImage",
+    "imageUrl",
+    "image_url"
+  ]);
 
-  const category =
-    getValue([
-      "productCategory",
-      "category"
-    ]);
-
-  const imageUrl =
-    getValue([
-      "productImage",
-      "imageUrl",
-      "image_url"
-    ]);
-
-  const description =
-    getValue([
-      "productDescription",
-      "description"
-    ]);
+  const description = getValue([
+    "productDescription",
+    "description"
+  ]);
 
   if (!name) {
     alert("نام محصول را وارد کنید");
@@ -423,217 +221,79 @@ async function addProduct() {
     return;
   }
 
-  try {
-
-    const { error } =
-      await supabaseClient
-        .from("products")
-        .insert([{
-          name: name,
-          price: Number(price),
-          category: category || null,
-          image_url: imageUrl || null,
-          description: description || null
-        }]);
-
-    if (error) {
-
-      console.error(error);
-
-      alert(
-        "محصول اضافه نشد ❌\n\n" +
-        error.message
-      );
-
-      return;
-    }
-
-    alert(
-      "محصول با موفقیت اضافه شد ✅"
-    );
-
-    clearProductForm();
-
-    await loadProducts();
-
-  } catch (error) {
-
-    alert(
-      "خطا هنگام افزودن محصول ❌\n\n" +
-      (error.message || String(error))
-    );
-  }
-}
-
-// ==========================================
-// حذف محصول
-// ==========================================
-async function deleteProduct(id) {
-
-  if (!supabaseClient) {
-    if (!initSupabase()) return;
-  }
-
-  if (
-    !confirm(
-      "آیا از حذف این محصول مطمئن هستید؟"
-    )
-  ) {
-    return;
-  }
-
-  const { error } =
-    await supabaseClient
-      .from("products")
-      .delete()
-      .eq("id", id);
+  const { error } = await supabaseClient
+    .from("products")
+    .insert([{
+      name: name,
+      price: Number(price),
+      category: category || null,
+      image_url: imageUrl || null,
+      description: description || null
+    }]);
 
   if (error) {
-
-    alert(
-      "حذف محصول انجام نشد ❌\n\n" +
-      error.message
-    );
-
+    alert("محصول اضافه نشد ❌\n\n" + error.message);
     return;
   }
 
-  alert(
-    "محصول حذف شد ✅"
-  );
+  alert("محصول با موفقیت اضافه شد ✅");
 
+  clearProductForm();
   await loadProducts();
 }
 
-// ==========================================
-// پاک کردن فرم
-// ==========================================
+async function deleteProduct(id) {
+  if (!confirm("آیا از حذف این محصول مطمئن هستید؟")) {
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("products")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("حذف محصول انجام نشد ❌\n\n" + error.message);
+    return;
+  }
+
+  alert("محصول حذف شد ✅");
+  await loadProducts();
+}
+
 function clearProductForm() {
-
   const ids = [
-
     "productName",
     "name",
     "productTitle",
-
     "productPrice",
     "price",
-
     "productCategory",
     "category",
-
     "productImage",
     "imageUrl",
     "image_url",
-
     "productDescription",
     "description"
   ];
 
   ids.forEach(id => {
-
-    const element =
-      document.getElementById(id);
-
-    if (element) {
-      element.value = "";
-    }
+    const element = document.getElementById(id);
+    if (element) element.value = "";
   });
-
-  const preview =
-    document.getElementById(
-      "imagePreview"
-    );
-
-  if (preview) {
-    preview.style.display = "none";
-  }
 }
 
-// ==========================================
-// بررسی ورود قبلی
-// ==========================================
-async function checkAdmin() {
-
-  if (!initSupabase()) {
-    return;
-  }
-
-  try {
-
-    const { data, error } =
-      await supabaseClient.auth.getSession();
-
-    if (error) {
-
-      console.error(
-        "Session error:",
-        error
-      );
-
-      return;
-    }
-
-    const loginBox =
-      document.getElementById("loginBox");
-
-    const panel =
-      document.getElementById("panel");
-
-    if (data && data.session) {
-
-      if (loginBox) {
-        loginBox.style.display = "none";
-      }
-
-      if (panel) {
-        panel.style.display = "block";
-      }
-
-      await loadProducts();
-
-    } else {
-
-      if (loginBox) {
-        loginBox.style.display = "block";
-      }
-
-      if (panel) {
-        panel.style.display = "none";
-      }
-    }
-
-  } catch (error) {
-
-    console.error(
-      "checkAdmin error:",
-      error
-    );
-  }
-}
-
-// ==========================================
-// ابزارها
-// ==========================================
 function updateProductCount(products) {
-
-  const element =
-    document.getElementById(
-      "statProducts"
-    );
+  const element = document.getElementById("statProducts");
 
   if (element) {
-    element.textContent =
-      products ? products.length : 0;
+    element.textContent = products ? products.length : 0;
   }
 }
 
 function getValue(ids) {
-
   for (const id of ids) {
-
-    const element =
-      document.getElementById(id);
+    const element = document.getElementById(id);
 
     if (element) {
       return element.value.trim();
@@ -644,25 +304,15 @@ function getValue(ids) {
 }
 
 function formatPrice(price) {
-
-  if (
-    price === null ||
-    price === undefined ||
-    price === ""
-  ) {
+  if (price === null || price === undefined || price === "") {
     return "0";
   }
 
-  return Number(price)
-    .toLocaleString("fa-IR");
+  return Number(price).toLocaleString("fa-IR");
 }
 
 function escapeHtml(value) {
-
-  if (
-    value === null ||
-    value === undefined
-  ) {
+  if (value === null || value === undefined) {
     return "";
   }
 
@@ -674,17 +324,25 @@ function escapeHtml(value) {
     .replace(/'/g, "&#039;");
 }
 
-// ==========================================
-// شروع برنامه
-// ==========================================
-document.addEventListener(
-  "DOMContentLoaded",
-  function () {
-
-    setTimeout(
-      checkAdmin,
-      100
-    );
-
+async function checkAdmin() {
+  if (!supabaseClient) {
+    if (!initSupabase()) return;
   }
-);
+
+  const { data } =
+    await supabaseClient.auth.getSession();
+
+  if (data && data.session) {
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+
+    await loadProducts();
+  } else {
+    document.getElementById("loginBox").style.display = "block";
+    document.getElementById("panel").style.display = "none";
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  setTimeout(checkAdmin, 300);
+});
