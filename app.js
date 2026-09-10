@@ -13,6 +13,47 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadProducts();
 });
 
+
+const PRODUCT_TABLE = "gallerysang";
+
+function field(obj, names, fallback=null) {
+  if (!obj) return fallback;
+  const keys = Object.keys(obj);
+  for (const name of names) {
+    const exact = keys.find(k => k === name);
+    if (exact) return obj[exact];
+    const lower = keys.find(k => k.toLowerCase() === String(name).toLowerCase());
+    if (lower) return obj[lower];
+  }
+  return fallback;
+}
+
+function normalizeProduct(row) {
+  return {
+    id: field(row, ["id"]),
+    name: field(row, ["Name","name"], "محصول"),
+    price: field(row, ["Price","price"], 0),
+    category: field(row, ["Category","category"], "سنگ طبیعی"),
+    image_url: field(row, ["Image_url","image_url","Image URL","image"]),
+    description: field(row, ["description","Description"], ""),
+    created_at: field(row, ["Created","created_at","created"], null),
+    stock: field(row, ["stock","Stock"], null),
+    active: field(row, ["active","Active"], true),
+    _raw: row
+  };
+}
+
+function galleryProductPayload(data) {
+  // Only use columns confirmed in the existing gallerysang table.
+  return {
+    "Name": data.name,
+    "Price": data.price,
+    "Category": data.category || null,
+    "Image_url": data.image_url || null,
+    "description": data.description || null
+  };
+}
+
 function initSupabase() {
   try {
     if (!window.supabase || !window.SUPABASE_URL || !window.SUPABASE_KEY) {
@@ -34,23 +75,21 @@ async function loadProducts() {
   if (container) container.innerHTML = '<div class="loading">در حال بارگذاری محصولات...</div>';
 
   const { data, error } = await supabaseClient
-    .from("products")
-    .select("*")
-    .eq("active", true)
-    .order("created_at", { ascending: false });
+    .from(PRODUCT_TABLE)
+    .select("*");
 
   if (error) {
-    // برای دیتابیس قدیمی که هنوز ستون active ندارد، یک بار بدون آن دوباره تلاش می‌کنیم.
-    const retry = await supabaseClient.from("products").select("*").order("created_at", { ascending: false });
-    if (retry.error) {
-      console.error(error, retry.error);
-      if (container) container.innerHTML = '<div class="loading">خطا در دریافت محصولات. تنظیمات Supabase را بررسی کنید.</div>';
-      return;
-    }
-    allProducts = retry.data || [];
-  } else {
-    allProducts = data || [];
+    console.error(error);
+    if (container) container.innerHTML = '<div class="loading">خطا در دریافت محصولات. اتصال Supabase یا جدول gallerysang را بررسی کنید.</div>';
+    return;
   }
+
+  allProducts = (data || []).map(normalizeProduct).filter(p => p.active !== false);
+  allProducts.sort((a,b) => {
+    const da = a.created_at ? new Date(a.created_at).getTime() : 0;
+    const db = b.created_at ? new Date(b.created_at).getTime() : 0;
+    return db - da;
+  });
 
   filteredProducts = [...allProducts];
   renderCategories();
@@ -278,7 +317,7 @@ async function submitOrder(e) {
     if (orderError) throw orderError;
 
     const items = cart.map(item => ({
-      order_id: orderId, product_id: item.id, product_name: item.name,
+      order_id: orderId, product_id: null, product_name: item.name,
       price: Number(item.price) || 0, quantity: Number(item.quantity) || 1
     }));
     const { error: itemsError } = await supabaseClient.from("order_items").insert(items);

@@ -2,6 +2,45 @@ let supabaseClient = null;
 let adminProducts = [];
 let adminCategories = [];
 
+const PRODUCT_TABLE = "gallerysang";
+
+function field(obj, names, fallback=null) {
+  if (!obj) return fallback;
+  const keys = Object.keys(obj);
+  for (const name of names) {
+    const exact = keys.find(k => k === name);
+    if (exact) return obj[exact];
+    const lower = keys.find(k => k.toLowerCase() === String(name).toLowerCase());
+    if (lower) return obj[lower];
+  }
+  return fallback;
+}
+
+function normalizeProduct(row) {
+  return {
+    id: field(row, ["id"]),
+    name: field(row, ["Name","name"], "محصول"),
+    price: field(row, ["Price","price"], 0),
+    category: field(row, ["Category","category"], "سنگ طبیعی"),
+    image_url: field(row, ["Image_url","image_url","Image URL","image"]),
+    description: field(row, ["description","Description"], ""),
+    created_at: field(row, ["Created","created_at","created"], null),
+    stock: field(row, ["stock","Stock"], null),
+    active: field(row, ["active","Active"], true),
+    _raw: row
+  };
+}
+
+function galleryProductPayload(data) {
+  return {
+    "Name": data.name,
+    "Price": data.price,
+    "Category": data.category || null,
+    "Image_url": data.image_url || null,
+    "description": data.description || null
+  };
+}
+
 function showAdminMessage(message,type="error"){
   let box=document.getElementById("adminStatus");
   if(!box){box=document.createElement("div");box.id="adminStatus";box.className="admin-status";document.body.appendChild(box);}
@@ -64,10 +103,16 @@ async function adminLogout(){
 
 async function loadProducts(){
   if(!supabaseClient)return;
-  const {data,error}=await supabaseClient.from("products").select("*").order("created_at",{ascending:false});
-  if(error){console.error(error);return showAdminMessage("خطا در دریافت محصولات: "+error.message);}
-  adminProducts=data||[];displayProducts(adminProducts);updateProductCount();populateProductCategorySelect();
+  const {data,error}=await supabaseClient.from(PRODUCT_TABLE).select("*");
+  if(error){console.error(error);return showAdminMessage("خطا در دریافت محصولات از gallerysang: "+error.message);}
+  adminProducts=(data||[]).map(normalizeProduct).sort((a,b)=>{
+    const da=a.created_at?new Date(a.created_at).getTime():0;
+    const db=b.created_at?new Date(b.created_at).getTime():0;
+    return db-da;
+  });
+  displayProducts(adminProducts);updateProductCount();populateProductCategorySelect();
 }
+
 function displayProducts(products){
   const c=document.getElementById("productsList");if(!c)return;
   if(!products.length){c.innerHTML='<div class="empty-products">هنوز محصولی ثبت نشده است.</div>';return;}
@@ -94,18 +139,17 @@ async function saveProduct(){
     name:document.getElementById("productName").value.trim(),
     price:Number(document.getElementById("productPrice").value),
     category:document.getElementById("productCategory").value||null,
-    stock:Math.max(0,Number(document.getElementById("productStock").value||0)),
     image_url:document.getElementById("productImage").value.trim()||null,
-    description:document.getElementById("productDescription").value.trim()||null,
-    active:document.getElementById("productActive").checked
+    description:document.getElementById("productDescription").value.trim()||null
   };
   if(!payload.name)return showAdminMessage("نام محصول را وارد کنید.");
   if(!Number.isFinite(payload.price)||payload.price<0)return showAdminMessage("قیمت محصول صحیح نیست.");
   const btn=document.getElementById("saveProductBtn");btn.disabled=true;
   try{
+    const dbPayload=galleryProductPayload(payload);
     const result=id
-      ? await supabaseClient.from("products").update(payload).eq("id",id)
-      : await supabaseClient.from("products").insert(payload);
+      ? await supabaseClient.from(PRODUCT_TABLE).update(dbPayload).eq("id",id)
+      : await supabaseClient.from(PRODUCT_TABLE).insert(dbPayload);
     if(result.error)throw result.error;
     showAdminMessage(id?"محصول ویرایش شد ✅":"محصول اضافه شد ✅","success");
     resetProductForm();await loadProducts();
@@ -129,7 +173,7 @@ function editProduct(id){
 }
 async function deleteProduct(id){
   if(!confirm("آیا از حذف این محصول مطمئن هستید؟"))return;
-  const {error}=await supabaseClient.from("products").delete().eq("id",id);
+  const {error}=await supabaseClient.from(PRODUCT_TABLE).delete().eq("id",id);
   if(error)return showAdminMessage("حذف انجام نشد: "+error.message);
   showAdminMessage("محصول حذف شد ✅","success");await loadProducts();
 }
@@ -154,8 +198,14 @@ function renderImagePreview(){
 
 async function loadCategories(){
   const {data,error}=await supabaseClient.from("categories").select("*").order("name");
-  if(error){console.error(error);showAdminMessage("دسته‌بندی‌ها آماده نیستند. schema.sql را اجرا کنید.");return;}
-  adminCategories=data||[];renderCategoriesAdmin();populateProductCategorySelect();
+  if(error){
+    console.warn("categories table unavailable:",error.message);
+    const names=[...new Set(adminProducts.map(p=>p.category).filter(Boolean))];
+    adminCategories=names.map((name,i)=>({id:"local-"+i,name,icon:"◇",active:true,_local:true}));
+  } else {
+    adminCategories=data||[];
+  }
+  renderCategoriesAdmin();populateProductCategorySelect();
   const e=document.getElementById("statCats");if(e)e.textContent=adminCategories.filter(c=>c.active!==false).length.toLocaleString("fa-IR");
 }
 function renderCategoriesAdmin(){
@@ -170,7 +220,7 @@ async function addCategory(){
   const icon=document.getElementById("newCategoryIcon").value.trim()||"◇";
   if(!name)return showAdminMessage("نام دسته را وارد کنید.");
   const {error}=await supabaseClient.from("categories").insert({name,icon,active:true});
-  if(error)return showAdminMessage("افزودن دسته انجام نشد: "+error.message);
+  if(error)return showAdminMessage("افزودن دسته انجام نشد. ابتدا جدول categories را با schema.sql آماده کنید: "+error.message);
   document.getElementById("newCategoryName").value="";showAdminMessage("دسته اضافه شد ✅","success");await loadCategories();
 }
 async function deleteCategory(id){
