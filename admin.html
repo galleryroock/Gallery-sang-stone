@@ -1,615 +1,104 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
-
 <head>
-
   <meta charset="UTF-8">
-
-  <meta name="viewport"
-        content="width=device-width, initial-scale=1.0">
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>داشبورد مدیریت | گالری سنگ</title>
-
   <link rel="stylesheet" href="style.css">
-
-  <!-- کتابخانه Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-  <!-- تنظیمات Supabase -->
- <script src="config.js?v=2"></script> 
-
+  <script src="config.js?v=3"></script>
 </head>
-
-
 <body class="admin-body">
-
 <div class="admin-wrap">
-
-
-  <!-- ===================================== -->
-  <!-- سربرگ -->
-  <!-- ===================================== -->
-
   <header class="admin-head">
-
-    <div>
-      <h1>🪨 گالری سنگ طبیعی</h1>
-      <p>داشبورد مدیریت فروشگاه</p>
-    </div>
-
-    <button
-      type="button"
-      onclick="adminLogout()"
-      class="logout-btn">
-      خروج از حساب
-    </button>
-
+    <div><h1>🪨 گالری سنگ طبیعی</h1><p>داشبورد مدیریت فروشگاه</p></div>
+    <button type="button" onclick="adminLogout()" class="logout-btn">خروج از حساب</button>
   </header>
 
-
-
-  <!-- ===================================== -->
-  <!-- ورود مدیر -->
-  <!-- ===================================== -->
-
-  <section
-    id="loginBox"
-    class="admin-card login-card">
-
+  <section id="loginBox" class="admin-card login-card">
     <h2>🔐 ورود مدیر</h2>
-
-    <p>
-      برای ورود به پنل مدیریت، ایمیل و رمز عبور خود را وارد کنید.
-    </p>
-
-
-    <div class="form-group">
-
-      <label for="adminEmail">
-        ایمیل
-      </label>
-
-      <input
-        type="email"
-        id="adminEmail"
-        placeholder="ایمیل مدیر"
-        autocomplete="email">
-
-    </div>
-
-
-    <div class="form-group">
-
-      <label for="adminPassword">
-        رمز عبور
-      </label>
-
-      <input
-        type="password"
-        id="adminPassword"
-        placeholder="رمز عبور"
-        autocomplete="current-password">
-
-    </div>
-
-
-    <button
-      type="button"
-      onclick="adminLogin()"
-      class="primary-btn">
-
-      ورود به پنل
-
-    </button>
-
+    <p>برای ورود به پنل مدیریت، ایمیل و رمز عبور مدیر را وارد کنید.</p>
+    <div class="form-group"><label for="adminEmail">ایمیل</label><input type="email" id="adminEmail" placeholder="ایمیل مدیر" autocomplete="email"></div>
+    <div class="form-group"><label for="adminPassword">رمز عبور</label><input type="password" id="adminPassword" placeholder="رمز عبور" autocomplete="current-password"></div>
+    <button type="button" onclick="adminLogin()" class="primary-btn">ورود به پنل</button>
   </section>
 
-
-
-  <!-- ===================================== -->
-  <!-- پنل مدیریت -->
-  <!-- ===================================== -->
-
-  <section
-    id="panel"
-    style="display:none;">
-
-
-
-    <!-- ================================= -->
-    <!-- آمار -->
-    <!-- ================================= -->
-
+  <section id="panel" style="display:none">
     <div class="dashboard-stats">
-
-
-      <div class="stat-card">
-
-        <span>💰 فروش</span>
-
-        <small>تومان</small>
-
-        <b id="statSales">0</b>
-
-      </div>
-
-
-      <div class="stat-card">
-
-        <span>🛒 سفارش</span>
-
-        <small>تعداد</small>
-
-        <b id="statOrders">0</b>
-
-      </div>
-
-
-      <div class="stat-card">
-
-        <span>💎 محصول فعال</span>
-
-        <small>تعداد</small>
-
-        <b id="statProducts">0</b>
-
-      </div>
-
-
-      <div class="stat-card">
-
-        <span>📂 دسته</span>
-
-        <small>تعداد</small>
-
-        <b id="statCats">0</b>
-
-      </div>
-
-
+      <div class="stat-card"><span>💰 فروش پرداخت‌شده</span><small>تومان</small><b id="statSales">۰</b></div>
+      <div class="stat-card"><span>🛒 سفارش</span><small>تعداد</small><b id="statOrders">۰</b></div>
+      <div class="stat-card"><span>💎 محصول فعال</span><small>تعداد</small><b id="statProducts">۰</b></div>
+      <div class="stat-card"><span>📂 دسته</span><small>تعداد</small><b id="statCats">۰</b></div>
     </div>
-
-
-
-    <!-- ================================= -->
-    <!-- تب‌های مدیریت -->
-    <!-- ================================= -->
 
     <div class="admin-tabs">
-
-      <button
-        type="button"
-        class="active"
-        onclick="showAdminTab('productsTab', this)">
-
-        محصولات
-
-      </button>
-
-
-      <button
-        type="button"
-        onclick="showAdminTab('ordersTab', this)">
-
-        سفارش‌ها
-
-      </button>
-
-
-      <button
-        type="button"
-        onclick="showAdminTab('categoriesTab', this)">
-
-        دسته‌بندی‌ها
-
-      </button>
-
+      <button type="button" class="active" onclick="showAdminTab('productsTab',this)">محصولات</button>
+      <button type="button" onclick="showAdminTab('ordersTab',this)">سفارش‌ها</button>
+      <button type="button" onclick="showAdminTab('categoriesTab',this)">دسته‌بندی‌ها</button>
     </div>
 
-
-
-    <!-- ================================= -->
-    <!-- محصولات -->
-    <!-- ================================= -->
-
-    <div id="productsTab"
-         class="admin-tab-content">
-
-
+    <div id="productsTab" class="admin-tab-content">
       <div class="admin-grid">
-
-
-
-        <!-- ============================= -->
-        <!-- فرم افزودن محصول -->
-        <!-- ============================= -->
+        <div class="admin-card">
+          <h2 id="productFormTitle">➕ افزودن محصول جدید</h2>
+          <input type="hidden" id="editingProductId">
+          <div class="form-group"><label>نام محصول</label><input type="text" id="productName" maxlength="150" placeholder="مثلاً سنگ عقیق شجر"></div>
+          <div class="form-group"><label>قیمت</label><input type="number" id="productPrice" min="0" step="1" placeholder="2500000"><small>به تومان</small></div>
+          <div class="form-group"><label>دسته‌بندی</label><select id="productCategory"><option value="">انتخاب دسته‌بندی</option></select></div>
+          <div class="form-group"><label>موجودی</label><input type="number" id="productStock" min="0" step="1" value="1"></div>
+          <div class="form-group"><label>لینک تصویر</label><input type="url" id="productImage" placeholder="https://..."><div id="imagePreviewWrap"></div></div>
+          <div class="form-group"><label>توضیحات</label><textarea id="productDescription" rows="5" maxlength="3000" placeholder="توضیحات محصول..."></textarea></div>
+          <label class="check-row"><input type="checkbox" id="productActive" checked> محصول در سایت نمایش داده شود</label>
+          <div class="form-actions"><button type="button" onclick="saveProduct()" class="primary-btn" id="saveProductBtn">➕ افزودن محصول</button><button type="button" onclick="resetProductForm()" class="secondary-btn">پاک کردن</button></div>
+        </div>
 
         <div class="admin-card">
-
-          <h2>
-            ➕ افزودن محصول جدید
-          </h2>
-
-
-          <div class="form-group">
-
-            <label for="productName">
-              نام محصول
-            </label>
-
-            <input
-              type="text"
-              id="productName"
-              placeholder="مثلاً سنگ عقیق شجر">
-
-          </div>
-
-
-
-          <div class="form-group">
-
-            <label for="productPrice">
-              قیمت
-            </label>
-
-            <input
-              type="number"
-              id="productPrice"
-              placeholder="مثلاً 2500000"
-              min="0">
-
-            <small>
-              قیمت را به تومان وارد کنید.
-            </small>
-
-          </div>
-
-
-
-          <div class="form-group">
-
-            <label for="productCategory">
-              دسته‌بندی
-            </label>
-
-            <select id="productCategory">
-
-              <option value="">
-                انتخاب دسته‌بندی
-              </option>
-
-              <option value="عقیق">
-                عقیق
-              </option>
-
-              <option value="شجر">
-                شجر
-              </option>
-
-              <option value="یشم">
-                یشم
-              </option>
-
-              <option value="ژئود">
-                ژئود
-              </option>
-
-              <option value="سنگ کلکسیونی">
-                سنگ کلکسیونی
-              </option>
-
-              <option value="دسته کلیدی">
-                دسته کلیدی
-              </option>
-
-              <option value="سایر">
-                سایر
-              </option>
-
-            </select>
-
-          </div>
-
-
-
-          <div class="form-group">
-
-            <label for="productImage">
-              لینک تصویر محصول
-            </label>
-
-            <input
-              type="url"
-              id="productImage"
-              placeholder="https://...">
-
-            <small>
-              لینک مستقیم تصویر را وارد کنید.
-            </small>
-
-          </div>
-
-
-
-          <div class="form-group">
-
-            <label for="productDescription">
-              توضیحات محصول
-            </label>
-
-            <textarea
-              id="productDescription"
-              rows="5"
-              placeholder="توضیحات محصول را بنویسید..."></textarea>
-
-          </div>
-
-
-
-          <button
-            type="button"
-            onclick="addProduct()"
-            class="primary-btn">
-
-            ➕ افزودن محصول
-
-          </button>
-
-
+          <div class="card-title-row"><h2>📦 محصولات ثبت‌شده</h2><button type="button" onclick="loadProducts()" class="refresh-btn">🔄 بروزرسانی</button></div>
+          <div id="productsList" class="products-list"><div class="empty-products">در حال دریافت محصولات...</div></div>
         </div>
+      </div>
+    </div>
 
+    <div id="ordersTab" class="admin-tab-content" style="display:none">
+      <div class="admin-card">
+        <div class="card-title-row"><h2>🛒 سفارش‌ها</h2><button type="button" onclick="loadOrders()" class="refresh-btn">🔄 بروزرسانی</button></div>
+        <div id="ordersList" class="orders-list"><div class="empty-products">در حال دریافت سفارش‌ها...</div></div>
+      </div>
+    </div>
 
-
-        <!-- ============================= -->
-        <!-- محصولات ثبت شده -->
-        <!-- ============================= -->
-
+    <div id="categoriesTab" class="admin-tab-content" style="display:none">
+      <div class="admin-grid categories-admin-grid">
         <div class="admin-card">
-
-          <div class="card-title-row">
-
-            <h2>
-              📦 محصولات ثبت‌شده
-            </h2>
-
-            <button
-              type="button"
-              onclick="loadProducts()"
-              class="refresh-btn">
-
-              🔄 بروزرسانی
-
-            </button>
-
-          </div>
-
-
-          <div
-            id="productsList"
-            class="products-list">
-
-            <div class="empty-products">
-              در حال دریافت محصولات...
-            </div>
-
-          </div>
-
+          <h2>➕ افزودن دسته</h2>
+          <div class="form-group"><label>نام دسته</label><input id="newCategoryName" maxlength="80" placeholder="مثلاً عقیق"></div>
+          <div class="form-group"><label>آیکون</label><input id="newCategoryIcon" maxlength="8" value="◇"></div>
+          <button type="button" onclick="addCategory()" class="primary-btn">افزودن دسته</button>
         </div>
-
-
-      </div>
-
-    </div>
-
-
-
-    <!-- ================================= -->
-    <!-- سفارش‌ها -->
-    <!-- ================================= -->
-
-    <div
-      id="ordersTab"
-      class="admin-tab-content"
-      style="display:none;">
-
-      <div class="admin-card">
-
-        <h2>
-          🛒 سفارش‌ها
-        </h2>
-
-        <div class="empty-products">
-
-          هنوز سفارشی ثبت نشده است.
-
+        <div class="admin-card">
+          <div class="card-title-row"><h2>📂 دسته‌ها</h2><button type="button" onclick="loadCategories()" class="refresh-btn">🔄</button></div>
+          <div id="categoriesList" class="category-list"></div>
         </div>
-
       </div>
-
     </div>
-
-
-
-    <!-- ================================= -->
-    <!-- دسته‌بندی‌ها -->
-    <!-- ================================= -->
-
-    <div
-      id="categoriesTab"
-      class="admin-tab-content"
-      style="display:none;">
-
-      <div class="admin-card">
-
-        <h2>
-          📂 دسته‌بندی محصولات
-        </h2>
-
-
-        <div class="category-list">
-
-          <div>💎 عقیق</div>
-
-          <div>🌳 شجر</div>
-
-          <div>🟢 یشم</div>
-
-          <div>🔮 ژئود</div>
-
-          <div>🪨 سنگ کلکسیونی</div>
-
-          <div>🔑 دسته کلیدی</div>
-
-          <div>📦 سایر</div>
-
-        </div>
-
-      </div>
-
-    </div>
-
-
   </section>
-
-
-
-  <!-- ===================================== -->
-  <!-- فوتر -->
-  <!-- ===================================== -->
-
-  <footer class="admin-footer">
-
-    <p>
-      © گالری سنگ طبیعی | پنل مدیریت
-    </p>
-
-  </footer>
-
-
+  <footer class="admin-footer"><p>© گالری سنگ طبیعی | پنل مدیریت</p></footer>
 </div>
-
-
-
-<!-- ===================================== -->
-<!-- کد جاوااسکریپت مدیریت -->
-<!-- ===================================== -->
-
-<script src="admin.js"></script>
-
-
+<script src="admin.js?v=3"></script>
 <script>
-
-  // تغییر تب‌های پنل مدیریت
-
-  function showAdminTab(tabId, button) {
-
-    const tabs =
-      document.querySelectorAll(".admin-tab-content");
-
-    tabs.forEach(function(tab) {
-
-      tab.style.display = "none";
-
-    });
-
-
-    const selectedTab =
-      document.getElementById(tabId);
-
-    if (selectedTab) {
-
-      selectedTab.style.display = "block";
-
-    }
-
-
-    const buttons =
-      document.querySelectorAll(".admin-tabs button");
-
-    buttons.forEach(function(btn) {
-
-      btn.classList.remove("active");
-
-    });
-
-
-    if (button) {
-
-      button.classList.add("active");
-
-    }
-
-  }
-
-
-  // نمایش تصویر قبل از ثبت محصول
-
-  const imageInput =
-    document.getElementById("productImage");
-
-
-  if (imageInput) {
-
-    imageInput.addEventListener(
-      "input",
-      function() {
-
-        const url =
-          this.value.trim();
-
-        let preview =
-          document.getElementById("imagePreview");
-
-
-        if (!preview) {
-
-          preview =
-            document.createElement("img");
-
-          preview.id =
-            "imagePreview";
-
-          preview.style.width =
-            "100%";
-
-          preview.style.maxHeight =
-            "250px";
-
-          preview.style.objectFit =
-            "cover";
-
-          preview.style.marginTop =
-            "10px";
-
-          preview.style.borderRadius =
-            "12px";
-
-          this.parentElement.appendChild(preview);
-
-        }
-
-
-        if (url) {
-
-          preview.src = url;
-
-          preview.style.display =
-            "block";
-
-        } else {
-
-          preview.style.display =
-            "none";
-
-        }
-
-      }
-    );
-
-  }
-
+function showAdminTab(tabId,button){
+  document.querySelectorAll(".admin-tab-content").forEach(t=>t.style.display="none");
+  const tab=document.getElementById(tabId); if(tab) tab.style.display="block";
+  document.querySelectorAll(".admin-tabs button").forEach(b=>b.classList.remove("active"));
+  button?.classList.add("active");
+  if(tabId==="ordersTab") loadOrders();
+  if(tabId==="categoriesTab") loadCategories();
+}
+document.getElementById("productImage")?.addEventListener("input",function(){
+  const wrap=document.getElementById("imagePreviewWrap");
+  if(!wrap) return;
+  const url=this.value.trim();
+  wrap.innerHTML=url?`<img class="image-preview" src="${escapeHtml(url)}" alt="پیش‌نمایش">`:"";
+});
 </script>
-
-
 </body>
 </html>
